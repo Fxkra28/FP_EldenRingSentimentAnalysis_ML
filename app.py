@@ -9,13 +9,9 @@ from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# --- Initial Setup and Configuration for Elden Ring Theme ---
-# The page_icon is now the URL you provided
 st.set_page_config(layout="wide", page_title="Analisis Sentimen Elden Ring", page_icon="asset/icon.jpg")
-try:
-    nltk.data.find('sentiment/vader_lexicon.zip')
-except nltk.downloader.DownloadError:
-    nltk.download('vader_lexicon')
+
+nltk.download('vader_lexicon')
 
 @st.cache_data
 def load_data():
