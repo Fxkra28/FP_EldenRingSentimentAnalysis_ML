@@ -9,7 +9,7 @@ from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-st.set_page_config(layout="wide", page_title="Analisis Sentimen Elden Ring", page_icon="asset/icon.jpg")
+st.set_page_config(layout="wide", page_title="Elden Ring Sentiment Analysis", page_icon="asset/icon.jpg")
 
 nltk.download('vader_lexicon')
 
@@ -90,7 +90,7 @@ def highlight_sentiment_words(text):
 
 def generate_wordcloud(text_series, title):
     if text_series.empty:
-        st.write(f"Tidak ada data untuk membuat word cloud {title}.")
+        st.write(f"No data to create {title} word cloud.")
         return
     text = " ".join(review for review in text_series)
     wordcloud = WordCloud(width=800, height=400, background_color="white", colormap="viridis").generate(text)
@@ -102,26 +102,26 @@ def generate_wordcloud(text_series, title):
 # --- Main Application UI ---
 with st.sidebar:
     st.image("asset/Elden-Ring-Logo.png", use_container_width=True)
-    st.title("Panel Ulasan Elden Ring")
-    keyword = st.text_input("Cari Topik dalam Ulasan", placeholder="Masukan Kata Kunci yang berkaitan dengan Elden Ring", help="Cari ulasan tentang bos, area, atau fitur tertentu.")
-    analyze_button = st.button("Analisa Sentimen", type="primary", use_container_width=True)
+    st.title("Elden Ring Review Panel")
+    keyword = st.text_input("Search for Topics in Reviews", placeholder="Enter a keyword related to Elden Ring", help="Search for reviews about specific bosses, areas, or features.")
+    analyze_button = st.button("Analyze Sentiment", type="primary", use_container_width=True)
 
-st.title("Analisis Sentimen Elden Ring")
-st.markdown("Arise, ye Tarnished! Selamat datang di dashboard untuk menganalisis sentimen para pemain di The Lands Between. Masukkan **kata kunci di sidebar** untuk mengungkap apa yang dikatakan para pemain lain tentang petualangan mereka.")
+st.title("Elden Ring Sentiment Analysis")
+st.markdown("Arise, ye Tarnished! Welcome to the dashboard for analyzing player sentiment in The Lands Between. Enter a **keyword in the sidebar** to uncover what other players are saying about their adventures.")
 
 if not analyze_button and 'results_df' not in st.session_state:
-     st.info("Menunggu input kata kunci dari seorang Tarnished di sidebar untuk memulai analisis...")
+     st.info("Waiting for a keyword input from a Tarnished in the sidebar to begin the analysis...")
      st.stop()
      
 if analyze_button and not keyword.strip():
-    st.error("Harap masukkan kata kunci, wahai Tarnished.")
+    st.error("Please enter a keyword, O Tarnished.")
     st.stop()
 
 if analyze_button:
-    with st.spinner(f"Memanggil para peramal untuk menganalisis ulasan: '{keyword}'..."):
+    with st.spinner(f"Summoning the soothsayers to analyze reviews for: '{keyword}'..."):
         filtered_df = df_reviews[df_reviews['ready_review'].str.contains(keyword.lower(), na=False)].copy()
         if filtered_df.empty:
-            st.warning(f"Tidak ada ulasan yang ditemukan mengandung kata kunci '{keyword}'. Coba kata kunci lain.")
+            st.warning(f"No reviews found containing the keyword '{keyword}'. Try another keyword.")
             st.stop()
         results_df = predict_sentiments(filtered_df)
         st.session_state['results_df'] = results_df
@@ -131,50 +131,50 @@ if 'results_df' in st.session_state:
     results_df = st.session_state['results_df']
     keyword = st.session_state['keyword']
     
-    st.success(f"Analisis selesai! Menampilkan hasil untuk **{len(results_df)} ulasan** terkait **'{keyword}'**.")
+    st.success(f"Analysis complete! Displaying results for **{len(results_df)} reviews** related to **'{keyword}'**.")
     color_map = {'positive': '#2ca02c', 'neutral': '#ff7f0e', 'negative': '#d62728'}
     
     # --- LOGIC CHANGE: Replacing st.tabs with st.radio for state persistence ---
-    tab_options = ["Ringkasan Utama", "Perbandingan Model", "Eksplorasi Ulasan"]
-    selected_tab = st.radio("Navigasi Halaman:", tab_options, horizontal=True, label_visibility="collapsed")
+    tab_options = ["Main Summary", "Model Comparison", "Review Exploration"]
+    selected_tab = st.radio("Page Navigation:", tab_options, horizontal=True, label_visibility="collapsed")
 
     # --- TAB 1 CONTENT ---
-    if selected_tab == "Ringkasan Utama":
-        st.header(f"Gambaran Umum Sentimen untuk '{keyword}'")
-        st.caption("Ringkasan ini didasarkan pada analisis VADER, sebuah model yang menganalisis sentimen berdasarkan aturan pada kata dan emoji.")
+    if selected_tab == "Main Summary":
+        st.header(f"Sentiment Overview for '{keyword}'")
+        st.caption("This summary is based on VADER analysis, a model that analyzes sentiment based on rules for words and emojis.")
         vader_counts = results_df['vader_sentiment'].value_counts()
         total_reviews = len(results_df)
         for sentiment in ['positive', 'neutral', 'negative']:
             if sentiment not in vader_counts: vader_counts[sentiment] = 0
         
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric(label="Total Ulasan", value=total_reviews)
-        col2.metric(label="👍 Ulasan Positif", value=vader_counts.get('positive', 0))
-        col3.metric(label="😐 Ulasan Netral", value=vader_counts.get('neutral', 0))
-        col4.metric(label="👎 Ulasan Negatif", value=vader_counts.get('negative', 0))
+        col1.metric(label="Total Reviews", value=total_reviews)
+        col2.metric(label="👍 Positive Reviews", value=vader_counts.get('positive', 0))
+        col3.metric(label="😐 Neutral Reviews", value=vader_counts.get('neutral', 0))
+        col4.metric(label="👎 Negative Reviews", value=vader_counts.get('negative', 0))
         
         st.markdown("---")
         
         col_chart, col_words = st.columns([1, 2])
         with col_chart:
-            st.subheader("Distribusi Sentimen")
+            st.subheader("Sentiment Distribution")
             fig_donut = go.Figure(data=[go.Pie(labels=vader_counts.index, values=vader_counts.values, hole=.4, marker_colors=[color_map.get(x) for x in vader_counts.index])])
             fig_donut.update_layout(showlegend=True, height=400, margin=dict(t=10, b=10, l=10, r=10))
             st.plotly_chart(fig_donut, use_container_width=True)
         with col_words:
-            st.subheader("Topik yang Sering Dibicarakan")
+            st.subheader("Frequently Discussed Topics")
             positive_text = results_df[results_df['vader_sentiment'] == 'positive']['ready_review']
-            st.write("**Kata Kunci dalam Ulasan Positif**")
-            generate_wordcloud(positive_text, "Positif")
+            st.write("**Keywords in Positive Reviews**")
+            generate_wordcloud(positive_text, "Positive")
             negative_text = results_df[results_df['vader_sentiment'] == 'negative']['ready_review']
-            st.write("**Kata Kunci dalam Ulasan Negatif**")
-            generate_wordcloud(negative_text, "Negatif")
+            st.write("**Keywords in Negative Reviews**")
+            generate_wordcloud(negative_text, "Negative")
 
     # --- TAB 2 CONTENT ---
-    elif selected_tab == "Perbandingan Model":
-        st.header("Perbandingan Detail Antar Model Analisis")
-        st.markdown("Bandingkan hasil dari setiap model untuk melihat perbedaannya dalam mengklasifikasikan sentimen. Ini lebih teknis dan menunjukkan bagaimana model AI bisa memiliki 'opini' yang berbeda.")
-        st.subheader("Distribusi Sentimen per Model")
+    elif selected_tab == "Model Comparison":
+        st.header("Detailed Comparison Between Analysis Models")
+        st.markdown("Compare the results from each model to see their differences in classifying sentiment. This is more technical and shows how AI models can have different 'opinions'.")
+        st.subheader("Sentiment Distribution per Model")
         col1, col2, col3 = st.columns(3)
         models = {'VADER': 'vader_sentiment', 'SVM (AI Model)': 'svm_sentiment', 'Random Forest (AI Model)': 'rf_sentiment'}
         for i, (model_name, col_name) in enumerate(models.items()):
@@ -184,33 +184,33 @@ if 'results_df' in st.session_state:
                 fig_donut = go.Figure(data=[go.Pie(labels=counts.index, values=counts.values, hole=.4, marker_colors=[color_map.get(x) for x in counts.index])])
                 fig_donut.update_layout(title_text=f'<b>{model_name}</b>', annotations=[dict(text=f'{len(results_df)}', x=0.5, y=0.5, font_size=20, showarrow=False)], showlegend=False, height=300, margin=dict(t=50, b=0, l=0, r=0))
                 st.plotly_chart(fig_donut, use_container_width=True)
-        st.subheader("Perbandingan Jumlah Ulasan per Sentimen")
+        st.subheader("Comparison of Review Counts per Sentiment")
         summary_df = pd.DataFrame({'VADER': results_df['vader_sentiment'].value_counts(), 'SVM': results_df['svm_sentiment'].value_counts(), 'Random Forest': results_df['rf_sentiment'].value_counts()}).reindex(['positive', 'neutral', 'negative']).fillna(0).astype(int)
-        fig_bar = px.bar(summary_df.T, barmode='group', color_discrete_map=color_map, labels={'value': 'Jumlah Ulasan', 'index': 'Model', 'variable': 'Sentimen'})
-        fig_bar.update_layout(title_text="Perbandingan Agregat Model")
+        fig_bar = px.bar(summary_df.T, barmode='group', color_discrete_map=color_map, labels={'value': 'Number of Reviews', 'index': 'Model', 'variable': 'Sentiment'})
+        fig_bar.update_layout(title_text="Aggregate Model Comparison")
         st.plotly_chart(fig_bar, use_container_width=True)
 
     # --- TAB 3 CONTENT ---
-    elif selected_tab == "Eksplorasi Ulasan":
-        st.header("Eksplorasi Ulasan dengan *Highlight* Kata")
-        st.markdown("Lihat ulasan individual dan perhatikan kata-kata kunci yang memengaruhi skor sentimennya (berdasarkan VADER).")
-        sentiment_filter = st.selectbox("Filter berdasarkan sentimen (VADER):", options=['Semua', 'positive', 'neutral', 'negative'])
+    elif selected_tab == "Review Exploration":
+        st.header("Review Exploration with Word Highlighting")
+        st.markdown("View individual reviews and note the keywords that influence their sentiment scores (based on VADER).")
+        sentiment_filter = st.selectbox("Filter by sentiment (VADER):", options=['All', 'positive', 'neutral', 'negative'])
         
-        if sentiment_filter == 'Semua':
+        if sentiment_filter == 'All':
             display_df = results_df
         else:
             display_df = results_df[results_df['vader_sentiment'] == sentiment_filter]
 
         if display_df.empty:
-            st.info(f"Tidak ada ulasan dengan sentimen '{sentiment_filter}' untuk kata kunci ini.")
+            st.info(f"No reviews with '{sentiment_filter}' sentiment for this keyword.")
         else:
             total_reviews = len(df_reviews[df_reviews['ready_review'].str.contains(keyword.lower(), na=False)])
-            st.write(f"Menampilkan {len(display_df)} dari {total_reviews} ulasan:")
+            st.write(f"Showing {len(display_df)} of {total_reviews} reviews:")
             for _, row in display_df.head(50).iterrows():
-                with st.expander(f"**Ulasan (VADER: {row['vader_sentiment'].capitalize()})** - *Voted Up: {row['votes_up']}*"):
-                    st.markdown("##### Teks Ulasan dengan *Highlight* Sentimen:")
+                with st.expander(f"**Review (VADER: {row['vader_sentiment'].capitalize()})** - *Voted Up: {row['votes_up']}*"):
+                    st.markdown("##### Review Text with Sentiment Highlighting:")
                     highlighted_review = highlight_sentiment_words(row['review'])
                     st.markdown(highlighted_review, unsafe_allow_html=True)
                     st.markdown("---")
-                    st.markdown("##### Detail Prediksi Model Lain:")
-                    st.json({"VADER (Aturan Kata)": f"{row['vader_sentiment']} (Skor: {row['vader_compound']:.2f})", "SVM (AI Model)": row['svm_sentiment'], "Random Forest (AI Model)": row['rf_sentiment']})
+                    st.markdown("##### Other Model Prediction Details:")
+                    st.json({"VADER (Word Rules)": f"{row['vader_sentiment']} (Score: {row['vader_compound']:.2f})", "SVM (AI Model)": row['svm_sentiment'], "Random Forest (AI Model)": row['rf_sentiment']})
