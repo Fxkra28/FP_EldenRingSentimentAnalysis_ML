@@ -212,5 +212,5 @@ if 'results_df' in st.session_state:
                     highlighted_review = highlight_sentiment_words(row['review'])
                     st.markdown(highlighted_review, unsafe_allow_html=True)
                     st.markdown("---")
-                    st.markdown("##### Other Model Prediction Details:")
+                    st.markdown("##### Model Prediction Details:")
                     st.json({"VADER (Word Rules)": f"{row['vader_sentiment']} (Score: {row['vader_compound']:.2f})", "SVM (AI Model)": row['svm_sentiment'], "Random Forest (AI Model)": row['rf_sentiment']})
