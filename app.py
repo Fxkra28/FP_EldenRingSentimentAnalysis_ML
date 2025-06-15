@@ -83,8 +83,8 @@ def highlight_sentiment_words(text):
     words = str(text).split()
     for word in words:
         score = vader_analyzer.polarity_scores(word)['compound']
-        if score > 0.1: highlighted_text.append(f"<span class='positive-word'>{word}</span>")
-        elif score < -0.1: highlighted_text.append(f"<span class='negative-word'>{word}</span>")
+        if score > 0.05: highlighted_text.append(f"<span class='positive-word'>{word}</span>")
+        elif score < -0.05: highlighted_text.append(f"<span class='negative-word'>{word}</span>")
         else: highlighted_text.append(word)
     return " ".join(highlighted_text)
 
